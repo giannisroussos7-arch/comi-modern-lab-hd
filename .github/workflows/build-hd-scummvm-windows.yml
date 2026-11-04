@@ -71,7 +71,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifact | Out-Null
-          Copy-Item scummvm/build-modernlab/Release64/scummvm.exe artifact/
+          Copy-Item scummvm/build-modernlab/Releasex64/scummvm.exe artifact/
           Copy-Item scummvm/vcpkg_installed/x64-windows/bin/*.dll artifact/ -ErrorAction SilentlyContinue
           Copy-Item modernlab_hd artifact/modernlab_hd -Recurse
           Copy-Item HD_TEST_README.txt artifact/
