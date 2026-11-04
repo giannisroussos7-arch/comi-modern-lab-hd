@@ -1,0 +1,83 @@
+name: Build COMI Modern Lab HD ScummVM (Windows x64)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2025-vs2026
+    env:
+      CONFIGURATION: Release
+      PLATFORM: x64
+      VCPKG_DEFAULT_TRIPLET: x64-windows
+      VCPKG_INSTALLED_DIR: ${{ github.workspace }}\scummvm\vcpkg_installed
+      VCPKG_FEATURE_FLAGS: dependencygraph
+      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}\vcpkg_cache,readwrite
+      GIT_VCPKG_COMMIT: 9e593bb18ea69cc5095e012465dcd675a822ed0d
+
+    steps:
+      - name: Checkout Modern Lab build kit
+        uses: actions/checkout@v4
+
+      - name: Checkout pinned ScummVM source
+        uses: actions/checkout@v4
+        with:
+          repository: scummvm/scummvm
+          ref: f909c9d882248fe25b4aff96ccb48b33cf2d8f42
+          path: scummvm
+
+      - name: Apply Modern Lab HD patch
+        run: python apply_modernlab_hd_patch.py scummvm
+
+      - name: Install vcpkg
+        uses: lukka/run-vcpkg@v11
+        id: runvcpkg
+        with:
+          vcpkgGitCommitId: ${{ env.GIT_VCPKG_COMMIT }}
+
+      - name: Integrate vcpkg
+        run: ${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/vcpkg integrate install
+
+      - name: Build create_project
+        run: |
+          cd scummvm/devtools/create_project/cmake
+          cmake .
+          cmake --build . -j 2
+
+      - name: Generate Visual Studio project
+        run: |
+          cd scummvm
+          mkdir build-modernlab
+          cd build-modernlab
+          ../devtools/create_project/cmake/Debug/create_project.exe .. --msvc --vcpkg --enable-all-engines --enable-png
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Install dependencies
+        run: |
+          cd scummvm
+          vcpkg install
+
+      - name: Build custom ScummVM
+        run: |
+          cd scummvm/build-modernlab
+          msbuild scummvm.sln /m /p:VcpkgEnableManifest=true /p:BuildInParallel=true /p:Configuration=${{ env.CONFIGURATION }} /p:PreferredToolArchitecture=x64 /p:Platform=x64 /v:minimal
+
+      - name: Assemble runnable package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifact | Out-Null
+          Copy-Item scummvm/build-modernlab/Release64/scummvm.exe artifact/
+          Copy-Item scummvm/vcpkg_installed/x64-windows/bin/*.dll artifact/ -ErrorAction SilentlyContinue
+          Copy-Item modernlab_hd artifact/modernlab_hd -Recurse
+          Copy-Item HD_TEST_README.txt artifact/
+
+      - name: Upload Windows build
+        uses: actions/upload-artifact@v4
+        with:
+          name: COMI-Modern-Lab-HD-v0.11-Windows-x64
+          path: artifact/
