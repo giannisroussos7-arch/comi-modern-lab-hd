@@ -58,7 +58,7 @@ jobs:
           cd scummvm
           mkdir build-modernlab
           cd build-modernlab
-          ../devtools/create_project/cmake/Debug/create_project.exe .. --msvc --vcpkg --disable-all-engines --enable-engine=scumm --enable-png
+          ../devtools/create_project/cmake/Debug/create_project.exe .. --msvc --vcpkg --disable-all-engines --enable-engine=scumm,scumm_7_8 --enable-png
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v3
