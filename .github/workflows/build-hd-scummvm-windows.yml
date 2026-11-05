@@ -1,4 +1,4 @@
-name: Build COMI Modern Lab HD v0.12 (Windows x64)
+name: Build COMI Modern Lab HD v0.12.1 (Windows x64)
 
 on:
   workflow_dispatch:
@@ -38,6 +38,9 @@ jobs:
       - name: Apply v0.12 true-colour compositor patch
         run: python apply_modernlab_truecolor_v012.py scummvm
 
+      - name: Apply v0.12.1 true-colour palette hotfix
+        run: python apply_modernlab_truecolor_palette_hotfix_v0121.py scummvm
+
       - name: Install vcpkg
         uses: lukka/run-vcpkg@v11
         id: runvcpkg
@@ -53,7 +56,7 @@ jobs:
           cmake .
           cmake --build . -j 2
 
-      - name: Generate SCUMM-only Visual Studio project
+      - name: Generate COMI-capable SCUMM Visual Studio project
         run: |
           cd scummvm
           mkdir build-modernlab
@@ -84,5 +87,5 @@ jobs:
       - name: Upload Windows build
         uses: actions/upload-artifact@v7
         with:
-          name: COMI-Modern-Lab-HD-v0.12-TRUECOLOR-Windows-x64
+          name: COMI-Modern-Lab-HD-v0.12.1-TRUECOLOR-Windows-x64
           path: artifact/
