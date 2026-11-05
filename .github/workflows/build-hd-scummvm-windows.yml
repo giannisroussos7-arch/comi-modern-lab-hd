@@ -1,4 +1,4 @@
-name: Build COMI Modern Lab HD ScummVM (Windows x64)
+name: Build COMI Modern Lab HD v0.12 (Windows x64)
 
 on:
   workflow_dispatch:
@@ -20,20 +20,23 @@ jobs:
 
     steps:
       - name: Checkout Modern Lab build kit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout pinned ScummVM source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: scummvm/scummvm
           ref: f909c9d882248fe25b4aff96ccb48b33cf2d8f42
           path: scummvm
 
-      - name: Apply Modern Lab HD patch
+      - name: Apply Modern Lab HD v0.11 base patch
         run: python apply_modernlab_hd_patch.py scummvm
 
       - name: Apply v0.11.1 room-object preservation hotfix
         run: python apply_modernlab_object_layer_hotfix.py scummvm
+
+      - name: Apply v0.12 true-colour compositor patch
+        run: python apply_modernlab_truecolor_v012.py scummvm
 
       - name: Install vcpkg
         uses: lukka/run-vcpkg@v11
@@ -50,15 +53,15 @@ jobs:
           cmake .
           cmake --build . -j 2
 
-      - name: Generate Visual Studio project
+      - name: Generate SCUMM-only Visual Studio project
         run: |
           cd scummvm
           mkdir build-modernlab
           cd build-modernlab
-          ../devtools/create_project/cmake/Debug/create_project.exe .. --msvc --vcpkg --enable-all-engines --enable-png
+          ../devtools/create_project/cmake/Debug/create_project.exe .. --msvc --vcpkg --disable-all-engines --enable-engine=scumm --enable-png
 
       - name: Add MSBuild to PATH
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
 
       - name: Install dependencies
         run: |
@@ -76,11 +79,10 @@ jobs:
           New-Item -ItemType Directory -Force -Path artifact | Out-Null
           Copy-Item scummvm/build-modernlab/Releasex64/scummvm.exe artifact/
           Copy-Item scummvm/vcpkg_installed/x64-windows/bin/*.dll artifact/ -ErrorAction SilentlyContinue
-          Copy-Item modernlab_hd artifact/modernlab_hd -Recurse
-          Copy-Item HD_TEST_README.txt artifact/
+          Copy-Item HD_TEST_README_V012.txt artifact/ -ErrorAction SilentlyContinue
 
       - name: Upload Windows build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: COMI-Modern-Lab-HD-v0.11.1-Windows-x64
+          name: COMI-Modern-Lab-HD-v0.12-TRUECOLOR-Windows-x64
           path: artifact/
