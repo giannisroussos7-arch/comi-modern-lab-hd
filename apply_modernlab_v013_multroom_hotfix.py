@@ -63,8 +63,8 @@ new_draw = r'''void ScummEngine::modernLabDrawHDFrame(VirtScreen *vs) {
 	const int srcW = vs->w;
 	// SCUMM v7/v8 keeps the main VirtScreen as tall as the room. Only the
 	// [_screenTop, _screenTop + _screenHeight) camera slice is visible.
-	const int viewTop = MAX(0, _screenTop);
-	const int viewBottom = MIN(vs->h, _screenTop + _screenHeight);
+	const int viewTop = MAX<int>(0, (int)_screenTop);
+	const int viewBottom = MIN<int>((int)vs->h, (int)_screenTop + (int)_screenHeight);
 	const int viewH = viewBottom - viewTop;
 	if (viewH <= 0)
 		return;
@@ -107,8 +107,8 @@ new_draw = r'''void ScummEngine::modernLabDrawHDFrame(VirtScreen *vs) {
 			if (!foreground) {
 				// Expand the preserved foreground/object mask by one native pixel.
 				// This avoids HD background colour leaking around antialiased sprites.
-				for (int yy = MAX(0, sy - 1); yy <= MIN(vs->h - 1, sy + 1) && !foreground; ++yy) {
-					for (int xx = MAX(0, x - 1); xx <= MIN(srcW - 1, x + 1); ++xx) {
+				for (int yy = MAX<int>(0, sy - 1); yy <= MIN<int>((int)vs->h - 1, sy + 1) && !foreground; ++yy) {
+					for (int xx = MAX<int>(0, x - 1); xx <= MIN<int>(srcW - 1, x + 1); ++xx) {
 						const int p = yy * pitch + xx;
 						// front != back  -> actors/text/dynamic foreground
 						// back  != base  -> stateful room object (door, prop, etc.)
