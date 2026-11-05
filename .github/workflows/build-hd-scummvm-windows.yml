@@ -32,6 +32,9 @@ jobs:
       - name: Apply Modern Lab HD patch
         run: python apply_modernlab_hd_patch.py scummvm
 
+      - name: Apply v0.11.1 room-object preservation hotfix
+        run: python apply_modernlab_object_layer_hotfix.py scummvm
+
       - name: Install vcpkg
         uses: lukka/run-vcpkg@v11
         id: runvcpkg
@@ -79,5 +82,5 @@ jobs:
       - name: Upload Windows build
         uses: actions/upload-artifact@v4
         with:
-          name: COMI-Modern-Lab-HD-v0.11-Windows-x64
+          name: COMI-Modern-Lab-HD-v0.11.1-Windows-x64
           path: artifact/
