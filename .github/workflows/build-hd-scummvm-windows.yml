@@ -1,4 +1,4 @@
-name: Build COMI Modern Lab HD v0.13 (Windows x64)
+name: Build COMI Modern Lab HD v0.13.2 Room Tester (Windows x64)
 
 on:
   workflow_dispatch:
@@ -44,6 +44,9 @@ jobs:
       - name: Apply v0.13 multi-room scrolling hotfix
         run: python apply_modernlab_v013_multroom_hotfix.py scummvm
 
+      - name: Apply v0.13.2 room test harness
+        run: python apply_modernlab_v0132_room_test_harness.py scummvm
+
       - name: Install vcpkg
         uses: lukka/run-vcpkg@v11
         id: runvcpkg
@@ -85,10 +88,10 @@ jobs:
           New-Item -ItemType Directory -Force -Path artifact | Out-Null
           Copy-Item scummvm/build-modernlab/Releasex64/scummvm.exe artifact/
           Copy-Item scummvm/vcpkg_installed/x64-windows/bin/*.dll artifact/ -ErrorAction SilentlyContinue
-          Copy-Item README_V013_RUNTIME.txt artifact/ -ErrorAction SilentlyContinue
+          Copy-Item README_V0132_RUNTIME.txt artifact/ -ErrorAction SilentlyContinue
 
       - name: Upload Windows build
         uses: actions/upload-artifact@v7
         with:
-          name: COMI-Modern-Lab-HD-v0.13-MULTIROOM-Windows-x64
+          name: COMI-Modern-Lab-HD-v0.13.2-ROOM-TESTER-Windows-x64
           path: artifact/
