@@ -37,6 +37,16 @@ for p in (input_cpp, scumm_cpp):
     if not p.exists():
         raise SystemExit(f"[error] missing {p}")
 
+# input.cpp normally sees Actor only as a forward declaration. The room tester
+# changes the ego actor room just like ScummDebugger::Cmd_Room(), so include
+# the full Actor definition before compiling the modified input.cpp.
+replace_once(
+    input_cpp,
+    '#include "scumm/debugger.h"\n',
+    '#include "scumm/debugger.h"\n#include "scumm/actor.h"\n',
+    "input.cpp Actor definition include"
+)
+
 old_branch = '''\t\t} else if (_modernLabHD && event.kbd.keycode == Common::KEYCODE_F10) {
 \t\t\t_modernLabHDUseBackground = !_modernLabHDUseBackground;
 \t\t\t_modernLabHDRoom = -1;
@@ -50,7 +60,7 @@ new_branch = '''\t\t} else if (_modernLabHD && event.kbd.keycode == Common::KEYC
 \t\t\t// Modern Lab renderer validation harness. This deliberately mirrors
 \t\t\t// ScummDebugger::Cmd_Room(): move the ego to the target room, stop
 \t\t\t// sounds, then use the normal startScene() path.
-\t\t\tif (_smushActive) {
+\t\t\tif (isSmushActive()) {
 \t\t\t\twarning("COMI Modern Lab tester: finish/skip the SMUSH cutscene before room-jumping");
 \t\t\t} else {
 \t\t\t\tstatic const int testRooms[] = { 9, 15, 79, 62, 91, 93 };
